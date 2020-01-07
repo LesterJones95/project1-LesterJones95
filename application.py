@@ -20,7 +20,7 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-db_loc = scoped_session(sessionmaker(bind=create_engine("postgres://postgres:root@localhost:5432/bookreview_project1")))
+#db_loc = scoped_session(sessionmaker(bind=create_engine("postgres://postgres:root@localhost:5432/bookreview_project1")))
 
 @app.route("/")
 def index():
@@ -34,29 +34,41 @@ def sign_up():
 @app.route("/personal_page", methods=["POST"])
 def personal_page():
     """Log Existing User in"""
-    users = db_loc.execute("SELECT * FROM users").fetchall()
+    users = db.execute("SELECT * FROM users").fetchall()
 
     username = request.form.get("username")
     password = request.form.get("password")
 
-    if db_loc.execute("SELECT * FROM users WHERE username = :username AND password =:password", {"username": username, "password":password}).rowcount == 0:
+    if db.execute("SELECT * FROM users WHERE username = :username AND password =:password", {"username": username, "password":password}).rowcount == 0:
         return render_template("error.html", message="No such user.")
 
-    return render_template("personal_page.html")
+    books = db.execute("SELECT * FROM books").fetchall()
+    return render_template("personal_page.html", books=books)
+
+@app.route("/books/<int:book_id>")
+def book(book_id):
+    """Lists details about a single book."""
+    # Make sure book exists.
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    if book is None:
+        return render_template("error.html", message="No such book.")
+    for k, v in book.items():
+        print(k, v)
+    return render_template("book.html", book=book)
 
 @app.route("/register", methods=["POST"])
 def register():
     """Log Existing User in"""
-    users = db_loc.execute("SELECT * FROM users").fetchall()
+    users = db.execute("SELECT * FROM users").fetchall()
 
     username = request.form.get("username")
     password = request.form.get("password")
 
-    if db_loc.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 1:
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 1:
         return render_template("error.html", message="Username taken")
 
 
-    db_loc.execute("INSERT INTO users (username, password) VALUES (:username, :password)",
+    db.execute("INSERT INTO users (username, password) VALUES (:username, :password)",
             {"username": username, "password": password})
-    db_loc.commit()
+    db.commit()
     return render_template("success.html")

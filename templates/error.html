@@ -9,4 +9,8 @@
 
   {{ message }}
 
+  <form class="" action="{{ url_for('index') }}" >
+    <!--<button class="btn btn-primary">back</button>-->
+    <a href="{{ url_for('index') }}">Try again</a>
+  </form>
 {% endblock %}
