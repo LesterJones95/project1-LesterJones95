@@ -5,7 +5,14 @@
 {% endblock %}
 
 {% block body %}
+
+
     <h1>Log in successfull</h1>
+
+    <form class="" action="{{ url_for('index') }}" >
+      <!--<button class="btn btn-primary">back</button>-->
+      <a href="{{ url_for('index') }}">Logout</a>
+    </form>
 
 
 {% endblock %}
